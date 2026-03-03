@@ -22,7 +22,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 909 prompts in one file
+├── index.html      # Complete application — CSS, JS, and 5914 prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -62,8 +62,10 @@ Generator-/
 The prompt dataset is defined as a JavaScript constant at the top of the `<script>` block:
 
 ```js
-const PROMPTS = [ /* 909 objects */ ];
+const PROMPTS = [ /* 6354 objects, IDs 1–6354 */ ];
 ```
+
+**Note:** IDs 1–1590 use JSON format `{"id":N,...}`; IDs 1591–5914 use JS object format `{id:N,...}`. Both are valid JS.
 
 ### Prompt object fields
 
@@ -86,12 +88,26 @@ const PROMPTS = [ /* 909 objects */ ];
 Feed-based: `giannanna Feed 1–5`, `lizakovalenkokoo Feed 1–4`, `vikitoriakpa Feed 1–3`,
 `Einzelbilder–Special`
 
-Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschungel·Wasserfälle`,
+Thematic (original): `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschungel·Wasserfälle`,
 `Skiresort·Alpen·Après-Ski`, `Yacht·Mittelmeer·Segeln`, `Amateur·Candid·Selfie`,
 `Fitness·Gym·Sport`, `Glamour·Studio·Portraits`, `Negligé·Chemise·Slip`,
 `Leder·Vinyl·Dark`, `Strumpfhosen·Tights·Nylons`, `Kawaii·Harajuku·Sweet`,
 `JK-Style·Uniform·Asian`, `Dress·Rock·Kleid`, `Casual·Street·Athleisure`,
 `Bikini·Swimwear·Beach`, `Bodysuit·Sheer·Transparent`
+
+Outfit categories (dedicated `c` slugs): `c_bh_set` (BH-Set·Lingerie·Elegant),
+`c_bik` (Bikini·Swimwear·Beach), `c_bod` (Bodysuit·Sheer·Transparent),
+`c_cas` (Casual·Street·Athleisure), `c_dr` (Dress·Rock·Kleid),
+`c_har` (Harness·Dark·Kunstleder), `c_jk` (JK-Style·Uniform·Asian),
+`c_kaw` (Kawaii·Harajuku·Sweet), `c_led` (Leder·Vinyl·Dark),
+`c_neg` (Negligé·Chemise·Slip), `c_str` (Strumpfhosen·Tights·Nylons),
+`c_nerd` (Nerdbrille·Geek·Smart), `c_ahe` (Ahegao·Ausdruck·Intensiv),
+`c_nass` (Nass·Wet·Glänzend)
+
+New outfit categories (added session 2): `c_lat` (Latex·Glänzend·Enganliegend),
+`c_crop` (Crop-Top·Hot-Pants·Summer), `c_kor` (Korsett·Bustier·Dessous),
+`c_push` (Push-up·BH·Lift), `c_spo` (Sporty-Chic·Tennis·Golf),
+`c_ove` (Oversize·Cozy·Minimal), `c_zop` (Zöpfe·Pigtails·Sweet)
 
 ---
 
@@ -103,23 +119,27 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 | `getFiltered()` | Returns filtered + sorted subset of `PROMPTS` based on active filters |
 | `buildSB()` | Builds the category sidebar from `PROMPTS` data |
 | `openModal(id)` | Opens the detail modal for a prompt by ID |
-| `copyCard(id, btn)` | Copies prompt text to clipboard; updates history |
+| `copyCard(id, btn)` | Copies prompt text to clipboard; triggers rating toast |
 | `cpText(p, btn)` | Copies arbitrary text to clipboard with visual feedback |
 | `toggleFav(id, btn)` | Adds/removes a prompt from favorites |
 | `blacklistCard(id)` | Moves a prompt to the blacklist |
 | `generateRandom()` | Runs the random generator with current modal filters |
+| `randomKombo()` | Picks a fully random prompt and shows outfit×pose info |
 | `switchTab(t)` | Switches between Browse / Favorites / Blacklist tabs |
 | `toggleTheme()` | Toggles dark/light theme and persists to localStorage |
 | `exportFiltered()` | Exports currently visible prompts as a downloadable file |
+| `showRateToast(id)` | Shows post-copy star rating mini popup (auto-dismisses after 3.5s) |
+| `setRating(id, val)` | Stores user's 1–5 star rating for a prompt |
 
 ### Application state variables (global JS)
 
 ```js
 let activeTab      // 'browse' | 'fav' | 'bl'
 let activeCategory // current sidebar category filter (string | null)
-let viewMode       // 'grid' | 'list'
-let sortMode       // 'az' | 'hot-desc' | 'hot-asc'
+let viewMode       // 'g' | 'l'
+let sortMode       // 'az' | 'hd' | 'hu' | 'rat'
 let filters        // { outfit, pose, face, loc, hotMin }
+let ratings        // { [promptId]: 1|2|3|4|5 } — user star ratings
 ```
 
 ---
@@ -131,7 +151,10 @@ let filters        // { outfit, pose, face, loc, hotMin }
 | `pmfav` | JSON array of favorited prompt IDs |
 | `pmbl` | JSON array of blacklisted prompt IDs |
 | `pmhist` | JSON array of last 20 copied prompt texts |
-| `pmtheme` | `'dark'` or `'light'` |
+| `pmtheme` | `'dark'` or `'light'` (absent = auto from system preference) |
+| `pmrating` | JSON object `{id: 1–5}` — user star ratings per prompt |
+| `pmstats` | JSON object — copy statistics (outfits, poses, total, today) |
+| `pmcustom` | JSON array — user-created custom prompts |
 
 ---
 
@@ -155,18 +178,22 @@ Do not hardcode colors. Use the existing CSS variables.
 ## Feature Inventory
 
 - **Browse tab** — card grid/list view with live search + multi-filter
-- **Filters** — Outfit (12 options), Pose (8 options), Face (3 options),
+- **Filters** — Outfit (21 options), Pose (11 options), Face (3 options),
   Location (11 options), Hotness range slider
-- **Sort** — A→Z, Hotness ↓, Hotness ↑
+- **Sort** — A→Z, Hotness ↓, Hotness ↑, Bewertung ↓ (by user star rating)
 - **View modes** — Grid and List
 - **Category sidebar** — auto-built from `PROMPTS`; collapses on mobile
 - **Favorites** — star toggle per card, persisted to `pmfav`
 - **Blacklist** — hide prompts; restore, delete, or export from Blacklist tab
 - **Copy to clipboard** — button per card with visual confirmation feedback
 - **Copy history bar** — last 20 copies, persisted to `pmhist`
-- **Detail modal** — full prompt view + similar prompts section
-- **Random generator modal** — filter by category, outfit, hotness min, count
-- **Dark / light theme** — toggle button, persisted to `pmtheme`
+- **Detail modal** — full prompt view + similar prompts (prioritised by outfit+pose match)
+- **Rating system** — 1–5 stars per card; post-copy rating toast; sort by rating
+- **Hotness gradient cards** — hot≥90 → red left-border; hot≥75 → gold left-border
+- **Random generator modal** — filter by outfit category, pose, hotness min, count;
+  includes ⚡ Zufalls-Kombo for a single random prompt
+- **Dark / light theme** — toggle button, persisted to `pmtheme`;
+  auto-detects `prefers-color-scheme` when no manual preference is set
 - **Export** — downloads currently filtered prompts as a file
 - **Keyboard shortcuts**:
   - `/` — focus search input
@@ -276,3 +303,22 @@ Update `CLAUDE.md` whenever:
 - New keyboard shortcuts or filter options are added
 
 The goal is to keep this file accurate as a first-read for any AI assistant.
+
+---
+
+## Outfit Matrix
+
+**23 outfit values** × **11 pose values** = 253 combos, each with ≥ 20 hot>90 prompts.
+
+| Outfits (23) | Poses (11) |
+|---|---|
+| BH-Set, Bikini, Bodysuit, Casual/Sport | Stehend, Liegend, Sitzend, Kniend |
+| Dress/Rock, Harness, JK-Style, Kawaii | Selfie, Close-Up, Rückenansicht, Duo |
+| Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille | Hängend/Baumeln, Im Wasser, Auf allen Vieren |
+| Ahegao, Nass, Latex/Glänzend, Crop-Top/Hot-Pants | |
+| Korsett/Bustier, Push-up/BH, Sporty-Chic/Tennis | |
+| Oversize/Cozy, Zöpfe/Pigtails | |
+| Overknee/Schuhe, Escort-Stil | |
+
+**Data quality rule:** All prompts begin with `"22 year old woman, mature adult features,"`.
+No age-ambiguous terms. All hot>90 prompts have `hot: 92–99`.
