@@ -22,7 +22,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 909 prompts in one file
+├── index.html      # Complete application — CSS, JS, and 7190 prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -54,6 +54,11 @@ Generator-/
 | `#botNav` | Mobile bottom navigation |
 | `#mo` | Prompt detail modal |
 | `#randmod` | Random generator modal |
+| `#kombmod` | Prompt combinator + mixer modal |
+| `#vp-panel` | Video prompt overlay panel |
+| `#rate-toast` | Rating toast (shown after copy) |
+| `#fs-panel` | Filter-set save/load panel |
+| `#login-screen` | Password protection screen |
 
 ---
 
@@ -62,7 +67,7 @@ Generator-/
 The prompt dataset is defined as a JavaScript constant at the top of the `<script>` block:
 
 ```js
-const PROMPTS = [ /* 909 objects */ ];
+const PROMPTS = [ /* 7190 objects */ ];
 ```
 
 ### Prompt object fields
@@ -93,6 +98,23 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 `JK-Style·Uniform·Asian`, `Dress·Rock·Kleid`, `Casual·Street·Athleisure`,
 `Bikini·Swimwear·Beach`, `Bodysuit·Sheer·Transparent`
 
+### Outfit categories (28 total, stored in `OUTFIT_CATS_LIST`)
+
+Original 14: BH-Set, Bikini, Bodysuit, Casual/Sport, Dress/Rock, Harness, JK-Style,
+Kawaii, Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille, Ahegao, Nass
+
+New 14: Latex/Glänzend (`c_lat`), Crop-Top/Hot-Pants (`c_crop`), Korsett/Bustier (`c_kor`),
+Push-up/BH (`c_push`), Sporty-Chic/Tennis (`c_spo`), Oversize/Cozy (`c_ove`),
+Zöpfe/Pigtails (`c_zop`), Overknee/Schuhe (`c_oks`), Escort-Stil (`c_esc`),
+Wet T-Shirt (`c_wet`), Club-Dress/Party (`c_club`), Braut/Dessous (`c_braut`),
+Cosplay/Anime (`c_cos`), Skinny (`c_skn`)
+
+### Pose categories (14 total)
+
+Original 8: Stehend, Liegend, Sitzend, Kniend, Selfie, Close-Up, Rückenansicht, Duo
+
+New 6: Hängend/Baumeln, Im Wasser, Auf allen Vieren, Spiegel-Pose, Im Stuhl/Sessel, Treppenaufgang
+
 ---
 
 ## Key JavaScript Functions
@@ -111,15 +133,25 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 | `switchTab(t)` | Switches between Browse / Favorites / Blacklist tabs |
 | `toggleTheme()` | Toggles dark/light theme and persists to localStorage |
 | `exportFiltered()` | Exports currently visible prompts as a downloadable file |
+| `showRateToast(id)` | Shows floating star-rating toast after copying a prompt |
+| `initSwipe()` | Sets up swipe-right=fav / swipe-left=blacklist on touch devices |
+| `showVideoPrompt(id)` | Shows structured 15s video prompt JSON in `#vp-panel` |
+| `getVideoPrompt(p)` | Builds Runway/Kling video prompt JSON from a prompt object |
+| `doMix()` | Generates a mixed prompt from outfit+pose selection in Mixer |
+| `fillMixSelects()` | Populates Mixer outfit/pose dropdowns with all 28/14 options |
+| `toggleFsPanel()` | Shows/hides the filter-set panel |
+| `saveFilterSet(name)` | Saves current filter state to `pmfilters` localStorage |
+| `loadFilterSet(name)` | Restores a saved filter state and re-renders |
+| `checkPw()` | Validates entered password against `_k` hash; stores `pmauth` |
 
 ### Application state variables (global JS)
 
 ```js
 let activeTab      // 'browse' | 'fav' | 'bl'
 let activeCategory // current sidebar category filter (string | null)
-let viewMode       // 'grid' | 'list'
-let sortMode       // 'az' | 'hot-desc' | 'hot-asc'
-let filters        // { outfit, pose, face, loc, hotMin }
+let viewMode       // 'g' (grid) | 'l' (list)
+let sortMode       // 'az' | 'hd' | 'hu' | 'rat'
+// Filter state is DOM-based — read from #fo, #fp, #ff, #fl2, #hmin directly
 ```
 
 ---
@@ -130,8 +162,13 @@ let filters        // { outfit, pose, face, loc, hotMin }
 |-----|---------|
 | `pmfav` | JSON array of favorited prompt IDs |
 | `pmbl` | JSON array of blacklisted prompt IDs |
-| `pmhist` | JSON array of last 20 copied prompt texts |
+| `pmhist` | JSON array of last 20 copied prompt IDs |
 | `pmtheme` | `'dark'` or `'light'` |
+| `pmrating` | JSON object mapping prompt ID → star rating (1–5) |
+| `pmstats` | JSON object with copy statistics |
+| `pmcustom` | JSON array of user-created custom prompts |
+| `pmfilters` | JSON object mapping set name → saved filter state |
+| `pmauth` | Auth token (btoa of password); presence unlocks the app |
 
 ---
 
@@ -155,9 +192,9 @@ Do not hardcode colors. Use the existing CSS variables.
 ## Feature Inventory
 
 - **Browse tab** — card grid/list view with live search + multi-filter
-- **Filters** — Outfit (12 options), Pose (8 options), Face (3 options),
+- **Filters** — Outfit (28 options), Pose (14 options), Face (3 options),
   Location (11 options), Hotness range slider
-- **Sort** — A→Z, Hotness ↓, Hotness ↑
+- **Sort** — A→Z, Hotness ↓, Hotness ↑, Rating ⭐
 - **View modes** — Grid and List
 - **Category sidebar** — auto-built from `PROMPTS`; collapses on mobile
 - **Favorites** — star toggle per card, persisted to `pmfav`
@@ -176,6 +213,13 @@ Do not hardcode colors. Use the existing CSS variables.
   - `S` — toggle sidebar
   - `1` / `2` / `3` — switch tabs
 - **Mobile layout** — fixed bottom nav bar; breakpoint at 768px
+- **Swipe gestures** — swipe right on card = Favorit, swipe left = Blacklist
+- **Rating** — 1–5 star rating per prompt; shown as toast after copy; sort by rating
+- **Video prompts** — 🎬 button on every card opens structured 15s Runway/Kling JSON prompt
+- **Filter sets** — 💾 button saves/loads named filter presets (stored in `pmfilters`)
+- **Mixer** — inside Kombinator modal; picks prompts by outfit+pose and mixes them
+- **Password** — `Fussball123...` protects the app; stored as btoa hash in `pmauth`
+- **MJ format** — outputs `--style raw --v 6.1 --stylize 750` (updated from v6)
 
 ---
 
