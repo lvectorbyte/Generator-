@@ -22,7 +22,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 7190 prompts in one file
+├── index.html      # Complete application — CSS, JS, and 15805 prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -98,22 +98,41 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 `JK-Style·Uniform·Asian`, `Dress·Rock·Kleid`, `Casual·Street·Athleisure`,
 `Bikini·Swimwear·Beach`, `Bodysuit·Sheer·Transparent`
 
-### Outfit categories (28 total, stored in `OUTFIT_CATS_LIST`)
+Special: `Ultra-Spicy · Maximum` (`c_ultra`) — 109 prompts, all with `hot: 97–100`, covering all outfit/pose combos at maximum intensity
+
+`Neu · Erweitert` (`c_new`) — 66 prompts covering new outfit and pose categories
+
+### Outfit categories (45 total, stored in `OUTFIT_CATS_LIST`)
 
 Original 14: BH-Set, Bikini, Bodysuit, Casual/Sport, Dress/Rock, Harness, JK-Style,
 Kawaii, Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille, Ahegao, Nass
 
-New 14: Latex/Glänzend (`c_lat`), Crop-Top/Hot-Pants (`c_crop`), Korsett/Bustier (`c_kor`),
+Wave 2 (14): Latex/Glänzend (`c_lat`), Crop-Top/Hot-Pants (`c_crop`), Korsett/Bustier (`c_kor`),
 Push-up/BH (`c_push`), Sporty-Chic/Tennis (`c_spo`), Oversize/Cozy (`c_ove`),
 Zöpfe/Pigtails (`c_zop`), Overknee/Schuhe (`c_oks`), Escort-Stil (`c_esc`),
 Wet T-Shirt (`c_wet`), Club-Dress/Party (`c_club`), Braut/Dessous (`c_braut`),
 Cosplay/Anime (`c_cos`), Skinny (`c_skn`)
 
-### Pose categories (14 total)
+Wave 3 (9): Uniform/Kostüm, Transparentes Kleid, Vintage/Pin-up, Kimono/Oriental,
+Fischnetz, Dirndl/Tracht, Micro-Bikini, Badeanzug, Maid/Dienstmädchen
+
+Wave 4 (8): Ballerina/Tutu, Pelz/Mantel, Camouflage, Seide/Pyjama,
+Lolita-Stil, Ketten/Chains, Tüll/Fairy, Blumen-Kleid
+
+### Pose categories (20 total)
 
 Original 8: Stehend, Liegend, Sitzend, Kniend, Selfie, Close-Up, Rückenansicht, Duo
 
-New 6: Hängend/Baumeln, Im Wasser, Auf allen Vieren, Spiegel-Pose, Im Stuhl/Sessel, Treppenaufgang
+Wave 2 (6): Hängend/Baumeln, Im Wasser, Auf allen Vieren, Spiegel-Pose, Im Stuhl/Sessel, Treppenaufgang
+
+Wave 3 (6): Auf dem Bauch liegend, Auf Tisch/Theke, Durch Vorhang lugend,
+Gegen Säule/Pfeiler, Kopfüber/Inversions, Schulter-Wrap
+
+### Face filter options (7 total, `#ff` dropdown)
+
+Original 3: Nah, Mittel, Weit
+
+New 4 (UI only): Profil, Augen geschlossen, Blick nach oben, Zunge/Ausdruck
 
 ---
 
@@ -202,7 +221,7 @@ Do not hardcode colors. Use the existing CSS variables.
 - **Copy to clipboard** — button per card with visual confirmation feedback
 - **Copy history bar** — last 20 copies, persisted to `pmhist`
 - **Detail modal** — full prompt view + similar prompts section
-- **Random generator modal** — filter by category, outfit, hotness min, count
+- **Random generator modal** — filter by category via `<select>` dropdown (outfit or cn), hotness min slider, count selection
 - **Dark / light theme** — toggle button, persisted to `pmtheme`
 - **Export** — downloads currently filtered prompts as a file
 - **Keyboard shortcuts**:
