@@ -22,7 +22,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 15805 prompts in one file
+├── index.html      # Complete application — CSS, JS, and 15793 prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -100,9 +100,9 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 
 Special: `Ultra-Spicy · Maximum` (`c_ultra`) — 109 prompts, all with `hot: 97–100`, covering all outfit/pose combos at maximum intensity
 
-`Neu · Erweitert` (`c_new`) — 66 prompts covering new outfit and pose categories
+`Neu · Erweitert` (`c_new`) — 54 prompts covering new outfit and pose categories
 
-### Outfit categories (45 total, stored in `OUTFIT_CATS_LIST`)
+### Outfit categories (43 total, stored in `OUTFIT_CATS_LIST`)
 
 Original 14: BH-Set, Bikini, Bodysuit, Casual/Sport, Dress/Rock, Harness, JK-Style,
 Kawaii, Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille, Ahegao, Nass
@@ -116,8 +116,8 @@ Cosplay/Anime (`c_cos`), Skinny (`c_skn`)
 Wave 3 (9): Uniform/Kostüm, Transparentes Kleid, Vintage/Pin-up, Kimono/Oriental,
 Fischnetz, Dirndl/Tracht, Micro-Bikini, Badeanzug, Maid/Dienstmädchen
 
-Wave 4 (8): Ballerina/Tutu, Pelz/Mantel, Camouflage, Seide/Pyjama,
-Lolita-Stil, Ketten/Chains, Tüll/Fairy, Blumen-Kleid
+Wave 4 (6): Pelz/Mantel, Camouflage, Seide/Pyjama,
+Ketten/Chains, Tüll/Fairy, Blumen-Kleid
 
 ### Pose categories (20 total)
 
