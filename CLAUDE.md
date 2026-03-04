@@ -22,7 +22,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 7190 prompts in one file
+├── index.html      # Complete application — CSS, JS, and 15739 prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -97,6 +97,8 @@ Thematic: `Wüste·Marokko·Boho`, `Penthouse·Skyline·Rooftop`, `Bali·Dschung
 `Leder·Vinyl·Dark`, `Strumpfhosen·Tights·Nylons`, `Kawaii·Harajuku·Sweet`,
 `JK-Style·Uniform·Asian`, `Dress·Rock·Kleid`, `Casual·Street·Athleisure`,
 `Bikini·Swimwear·Beach`, `Bodysuit·Sheer·Transparent`
+
+Special: `Ultra-Spicy · Maximum` (`c_ultra`) — 109 prompts, all with `hot: 97–100`, covering all outfit/pose combos at maximum intensity
 
 ### Outfit categories (28 total, stored in `OUTFIT_CATS_LIST`)
 
@@ -202,7 +204,7 @@ Do not hardcode colors. Use the existing CSS variables.
 - **Copy to clipboard** — button per card with visual confirmation feedback
 - **Copy history bar** — last 20 copies, persisted to `pmhist`
 - **Detail modal** — full prompt view + similar prompts section
-- **Random generator modal** — filter by category, outfit, hotness min, count
+- **Random generator modal** — filter by category via `<select>` dropdown (outfit or cn), hotness min slider, count selection
 - **Dark / light theme** — toggle button, persisted to `pmtheme`
 - **Export** — downloads currently filtered prompts as a file
 - **Keyboard shortcuts**:
