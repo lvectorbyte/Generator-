@@ -21,7 +21,7 @@ data are bundled into a single `.html` file.
 
 ```
 Generator-/
-├── index.html      # Complete application — CSS, JS, and 15793 prompts in one file
+├── index.html      # Complete application — CSS, JS, and prompts in one file
 ├── README.md       # Project title
 └── CLAUDE.md       # This file — AI assistant guide
 ```
@@ -58,6 +58,7 @@ Generator-/
 | `#rate-toast` | Rating toast (shown after copy) |
 | `#fs-panel` | Filter-set save/load panel |
 | `#login-screen` | Password protection screen |
+| `#mod-panel` | Modifier panel (🎨 button; body effects, pose/face/loc override chips) |
 
 ---
 
@@ -66,7 +67,7 @@ Generator-/
 The prompt dataset is defined as a JavaScript constant at the top of the `<script>` block:
 
 ```js
-const PROMPTS = [ /* 7190 objects */ ];
+const PROMPTS = [ /* objects */ ];
 ```
 
 ### Prompt object fields
@@ -101,24 +102,39 @@ Special: `Ultra-Spicy · Maximum` (`c_ultra`) — 109 prompts, all with `hot: 97
 
 `Neu · Erweitert` (`c_new`) — 54 prompts covering new outfit and pose categories
 
-### Outfit categories (43 total, stored in `OUTFIT_CATS_LIST`)
+### Outfit categories (48 total, stored in `OUTFIT_CATS_LIST`)
 
-Original 14: BH-Set, Bikini, Bodysuit, Casual/Sport, Dress/Rock, Harness, JK-Style,
-Kawaii, Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille, Ahegao, Nass
+Original 13: BH-Set, Bikini, Bodysuit, Casual/Sport, Dress/Rock, Harness, JK-Style,
+Kawaii, Leder/Vinyl, Negligé, Strumpfhosen, Nerdbrille, Ahegao
+(Note: "Nass" was moved to the Modifier Panel as a body effect)
 
-Wave 2 (14): Latex/Glänzend (`c_lat`), Crop-Top/Hot-Pants (`c_crop`), Korsett/Bustier (`c_kor`),
-Push-up/BH (`c_push`), Sporty-Chic/Tennis (`c_spo`), Oversize/Cozy (`c_ove`),
-Zöpfe/Pigtails (`c_zop`), Overknee/Schuhe (`c_oks`), Escort-Stil (`c_esc`),
-Wet T-Shirt (`c_wet`), Club-Dress/Party (`c_club`), Braut/Dessous (`c_braut`),
-Cosplay/Anime (`c_cos`), Skinny (`c_skn`)
+Wave 2 (13): Latex/Glänzend, Crop-Top/Hot-Pants, Korsett/Bustier, Push-up/BH,
+Sporty-Chic/Tennis, Oversize/Cozy, Overknee/Schuhe, Escort-Stil, Wet T-Shirt,
+Club-Dress/Party, Braut/Dessous, Cosplay/Anime, Skinny
 
 Wave 3 (9): Uniform/Kostüm, Transparentes Kleid, Vintage/Pin-up, Kimono/Oriental,
 Fischnetz, Dirndl/Tracht, Micro-Bikini, Badeanzug, Maid/Dienstmädchen
 
-Wave 4 (6): Pelz/Mantel, Camouflage, Seide/Pyjama,
-Ketten/Chains, Tüll/Fairy, Blumen-Kleid
+Wave 4 (6): Pelz/Mantel, Camouflage, Seide/Pyjama, Ketten/Chains, Tüll/Fairy, Blumen-Kleid
 
-### Pose categories (20 total)
+Wave 5 — Berufe (7): Stewardess, Polizistin, Krankenschwester, Sekretärin/Büro,
+Kellnerin, Sportlehrerin, Feuerwehr
+
+### Outfit groups (`OUTFIT_GROUPS`)
+
+The outfits are organized into visual groups for the Random Generator / Mixer dropdowns:
+
+| Group | Members (excerpt) |
+|-------|-------------------|
+| `Lingerie & Dessous` | BH-Set, Negligé, Bodysuit, Harness, Korsett/Bustier, Push-up/BH, Braut/Dessous, Ketten/Chains, Fischnetz, Strumpfhosen, Maid/Dienstmädchen |
+| `Berufe` | Stewardess, Polizistin, Krankenschwester, Sekretärin/Büro, Kellnerin, Sportlehrerin, Feuerwehr |
+| `Swimwear` | Bikini, Micro-Bikini, Badeanzug, Wet T-Shirt |
+| `Kleidung & Style` | Dress/Rock, Blumen-Kleid, Tüll/Fairy, Seide/Pyjama, Club-Dress/Party, Casual/Sport, Oversize/Cozy, Skinny, Crop-Top/Hot-Pants, Sporty-Chic/Tennis, Vintage/Pin-up, Transparentes Kleid |
+| `Dark & Fetisch` | Leder/Vinyl, Latex/Glänzend, Escort-Stil, Pelz/Mantel, Camouflage, Uniform/Kostüm, Ahegao |
+| `Asian & Kultur` | JK-Style, Kawaii, Kimono/Oriental, Dirndl/Tracht, Cosplay/Anime |
+| `Accessoires` | Nerdbrille, Overknee/Schuhe |
+
+### Pose categories (28 total, stored in `POSE_TEXTS`)
 
 Original 8: Stehend, Liegend, Sitzend, Kniend, Selfie, Close-Up, Rückenansicht, Duo
 
@@ -127,11 +143,34 @@ Wave 2 (6): Hängend/Baumeln, Im Wasser, Auf allen Vieren, Spiegel-Pose, Im Stuh
 Wave 3 (6): Auf dem Bauch liegend, Auf Tisch/Theke, Durch Vorhang lugend,
 Gegen Säule/Pfeiler, Kopfüber/Inversions, Schulter-Wrap
 
-### Face filter options (7 total, `#ff` dropdown)
+Wave 4 (8): Tanzend, Gegen Wand gelehnt, Yoga-Pose, Verhüllend/Enthüllend,
+Am Fenster, Halb liegend/Aufgestützt, Springend/Schwebend, Kniend/Hohlkreuz
 
-Original 3: Nah, Mittel, Weit
+### Modifier groups (`MOD_GROUPS`)
 
-New 4 (UI only): Profil, Augen geschlossen, Blick nach oben, Zunge/Ausdruck
+Used by the Modifier Panel to add body/style effects to prompt text on copy.
+Each group key maps to a label → prompt-suffix object:
+
+| Group | Keys |
+|-------|------|
+| `💧 Körpereffekte` | Nass, Öl, Milch, Glitzer, Schaum, Regen, Schweiss, Blütenblätter, Schwanger |
+| `💇 Frisur` | Offen & Lang, Hochgesteckt, Zöpfe, Pferdeschwanz, Lockig, Kurzhaar, Messy Bun |
+| `🎨 Haarfarbe` | Blond, Brünett, Rothaarig, Schwarz, Silber, Ombré |
+| `😊 Stimmung` | Verspielt, Dominant, Schüchtern, Selbstsicher, Verträumt |
+| `💪 Körperbau` | Slim, Athletisch, Curvy, Petite |
+
+### Face filter options (7 total, `FACE_TEXTS`)
+
+Base 3: Nah, Mittel, Weit
+
+Extended 4: Profil, Augen geschlossen, Blick nach oben, Zunge/Ausdruck
+
+All 7 are available in the Modifier Panel face override; the `#ff` filter dropdown uses the base 3.
+
+### Location options (11 total, stored in `LOC_TEXTS`)
+
+Strand/Meer, Wüste/Marokko, Bali/Asien, Alpen/Winter, Penthouse/Stadt, Studio,
+Boudoir/Indoor, Zuhause, Auto/Urban, Sport/Gym, Indoor
 
 ---
 
@@ -161,15 +200,28 @@ New 4 (UI only): Profil, Augen geschlossen, Blick nach oben, Zunge/Ausdruck
 | `saveFilterSet(name)` | Saves current filter state to `pmfilters` localStorage |
 | `loadFilterSet(name)` | Restores a saved filter state and re-renders |
 | `checkPw()` | Validates entered password against `_k` hash; stores `pmauth` |
+| `toggleModPanel(e)` | Opens/closes the 🎨 Modifier Panel; stops event propagation |
+| `toggleMod(key)` | Adds/removes a `MOD_GROUPS` effect from `zusatzModes` Set |
+| `toggleBkPose(k)` | Sets/unsets the active pose override (`bkPose`) |
+| `toggleBkFace(k)` | Sets/unsets the active face override (`bkFace`) |
+| `toggleBkLoc(k)` | Sets/unsets the active location override (`bkLoc`) |
+| `renderModTags()` | Updates the active-modifier tag display inside `#mod-panel` |
+| `setFmt(m)` | Sets output format mode (`''`, `'mj'`, `'sd'`, `'custom'`) |
+| `updateFmtChips()` | Highlights the active format chip in the top bar |
 
 ### Application state variables (global JS)
 
 ```js
-let activeTab      // 'browse' | 'fav' | 'bl'
-let activeCategory // current sidebar category filter (string | null)
-let viewMode       // 'g' (grid) | 'l' (list)
+let curCat         // active sidebar category ('all' or slug string)
 let sortMode       // 'az' | 'hd' | 'hu' | 'rat'
-// Filter state is DOM-based — read from #fo, #fp, #ff, #fl2, #hmin directly
+let viewMode       // 'g' (grid) | 'l' (list)
+let activeTab      // 'browse' | 'fav' | 'bl'
+let fmtMode        // '' | 'mj' | 'sd' | 'custom'
+let zusatzModes    // Set<string> — active MOD_GROUPS effect keys
+let bkPose         // string — active pose override key ('' = none)
+let bkFace         // string — active face override key ('' = none)
+let bkLoc          // string — active location override key ('' = none)
+// Filter dropdowns are DOM-based — read from #fo, #fp, #ff, #fl2, #hmin directly
 ```
 
 ---
@@ -210,8 +262,8 @@ Do not hardcode colors. Use the existing CSS variables.
 ## Feature Inventory
 
 - **Browse tab** — card grid/list view with live search + multi-filter
-- **Filters** — Outfit (28 options), Pose (14 options), Face (3 options),
-  Location (11 options), Hotness range slider
+- **Filters** — Outfit (48 options, grouped), Pose (28 in modifier), Face (7 in modifier),
+  Location (11 in modifier), Hotness range slider
 - **Sort** — A→Z, Hotness ↓, Hotness ↑, Rating ⭐
 - **View modes** — Grid and List
 - **Category sidebar** — auto-built from `PROMPTS`; collapses on mobile
@@ -236,8 +288,17 @@ Do not hardcode colors. Use the existing CSS variables.
 - **Video prompts** — 🎬 button on every card opens structured 15s Runway/Kling JSON prompt
 - **Filter sets** — 💾 button saves/loads named filter presets (stored in `pmfilters`)
 - **Mixer** — inside Kombinator modal; picks prompts by outfit+pose and mixes them
+- **Modifier Panel** (`#mod-panel`) — floating 🎨 panel with chip selectors:
+  - `MOD_GROUPS` body effects: Körpereffekte (Nass, Öl, Milch, Glitzer, …), Frisur, Haarfarbe, Stimmung, Körperbau
+  - Pose override (`bkPose`), Face override (`bkFace`), Location override (`bkLoc`)
+  - Selected modifiers are **appended** to prompt text on copy; shown as removable tags
+  - Active modifier summary is always visible below the 🎨 button
+- **Output format chips** — top bar chips switch `fmtMode`:
+  - `Original` — no suffix
+  - `Midjourney` — appends `--ar 2:3 --style raw --v 6.1 --stylize 750`
+  - `SDXL/A1111` — appends LoRA and quality tags
+  - Custom suffix — free-text input
 - **Password** — `Fussball123...` protects the app; stored as btoa hash in `pmauth`
-- **MJ format** — outputs `--style raw --v 6.1 --stylize 750` (updated from v6)
 
 ---
 
